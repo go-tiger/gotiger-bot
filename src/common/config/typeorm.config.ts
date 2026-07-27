@@ -10,7 +10,7 @@ export const typeOrmConfig: TypeOrmModuleAsyncOptions = {
     username: configService.get<string>('DB_USERNAME'),
     password: configService.get<string>('DB_PASSWORD'),
     database: configService.get<string>('DB_DATABASE'),
-    autoLoadEntities: true,
+    entities: [__dirname + '/../entities/**/*.entity{.ts,.js}'],
     namingStrategy: new SnakeNamingStrategy(),
     synchronize: true,
   }),
