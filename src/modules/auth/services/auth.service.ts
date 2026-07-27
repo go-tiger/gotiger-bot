@@ -5,6 +5,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import type { PublicClientApplication } from '@azure/msal-node';
@@ -12,6 +13,10 @@ import { MSAL_CLIENT } from '../providers/msal.provider';
 import { MinecraftAuthService } from './minecraft-auth.service';
 import { User } from '../../../common/entities/user.entity';
 import { Minecraft } from '../../../common/entities/minecraft.entity';
+import {
+  MINECRAFT_LINKED_EVENT,
+  MinecraftLinkedEvent,
+} from '../../../common/events/minecraft-linked.event';
 
 const MSAL_SCOPES = ['XboxLive.signin'];
 
@@ -24,6 +29,7 @@ export class AuthService {
     private readonly msalClient: PublicClientApplication,
     private readonly configService: ConfigService,
     private readonly minecraftAuthService: MinecraftAuthService,
+    private readonly eventEmitter: EventEmitter2,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(Minecraft)
@@ -42,8 +48,8 @@ export class AuthService {
   }
 
   async handleCallback(code: string, state: string): Promise<Minecraft> {
-    const [discordId] = state.split(':');
-    if (!discordId) {
+    const [discordId, guildId] = state.split(':');
+    if (!discordId || !guildId) {
       throw new BadRequestException('잘못된 인증 요청입니다.');
     }
 
@@ -64,6 +70,16 @@ export class AuthService {
     );
     this.logger.log(
       `계정 연결 완료: discordId=${discordId} username=${profile.username}`,
+    );
+
+    this.eventEmitter.emit(
+      MINECRAFT_LINKED_EVENT,
+      new MinecraftLinkedEvent(
+        discordId,
+        guildId,
+        profile.uuid,
+        profile.username,
+      ),
     );
 
     return minecraft;
