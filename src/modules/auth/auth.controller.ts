@@ -1,9 +1,29 @@
-import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Query,
+  Redirect,
+} from '@nestjs/common';
 import { AuthService } from './services/auth.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  /** Discord 버튼에서 진입하는 경로. Microsoft 로그인 화면으로 넘긴다. */
+  @Get('login')
+  @Redirect()
+  async login(
+    @Query('d') discordId?: string,
+    @Query('g') guildId?: string,
+  ): Promise<{ url: string }> {
+    if (!discordId || !guildId) {
+      throw new BadRequestException('잘못된 인증 요청입니다.');
+    }
+
+    return { url: await this.authService.createAuthUrl(discordId, guildId) };
+  }
 
   @Get('callback')
   async callback(

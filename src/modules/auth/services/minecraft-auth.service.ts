@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 
 const XBOX_AUTH = {
   userAuthUrl: 'https://user.auth.xboxlive.com/user/authenticate',
@@ -32,13 +32,23 @@ interface MinecraftProfileResponse {
 
 @Injectable()
 export class MinecraftAuthService {
+  private readonly logger = new Logger(MinecraftAuthService.name);
+
   async fetchProfile(microsoftToken: string): Promise<MinecraftProfile> {
     const xbl = await this.authenticateXbox(microsoftToken);
+    this.logger.log('Xbox Live 인증 완료');
+
     const xsts = await this.authorizeXsts(xbl.Token);
+    this.logger.log('XSTS 인증 완료');
+
     const userHash = xsts.DisplayClaims.xui[0].uhs;
     const minecraftToken = await this.loginMinecraft(userHash, xsts.Token);
+    this.logger.log('Minecraft 인증 완료');
 
-    return this.getProfile(minecraftToken);
+    const profile = await this.getProfile(minecraftToken);
+    this.logger.log(`프로필 조회: ${profile.username} (${profile.uuid})`);
+
+    return profile;
   }
 
   private async authenticateXbox(

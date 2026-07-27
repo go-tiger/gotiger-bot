@@ -1,4 +1,9 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -12,6 +17,8 @@ const MSAL_SCOPES = ['XboxLive.signin'];
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     @Inject(MSAL_CLIENT)
     private readonly msalClient: PublicClientApplication,
@@ -50,7 +57,16 @@ export class AuthService {
       result.accessToken,
     );
 
-    return this.link(discordId, profile.uuid, profile.username);
+    const minecraft = await this.link(
+      discordId,
+      profile.uuid,
+      profile.username,
+    );
+    this.logger.log(
+      `계정 연결 완료: discordId=${discordId} username=${profile.username}`,
+    );
+
+    return minecraft;
   }
 
   private async link(
