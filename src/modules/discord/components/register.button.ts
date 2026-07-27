@@ -9,13 +9,17 @@ import {
   MessageFlags,
 } from 'discord.js';
 import { REGISTER_BUTTON_ID } from '../discord.constants';
+import { PendingRegisterService } from '../services/pending-register.service';
 
 @Injectable()
 export class RegisterButton {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly pendingRegisterService: PendingRegisterService,
+  ) {}
 
   @Button(REGISTER_BUTTON_ID)
-  onRegister(@Context() [interaction]: ButtonContext) {
+  async onRegister(@Context() [interaction]: ButtonContext) {
     if (!interaction.guildId) {
       return interaction.reply({
         content: '서버 안에서만 사용할 수 있습니다.',
@@ -33,10 +37,13 @@ export class RegisterButton {
         .setURL(url),
     );
 
-    return interaction.reply({
+    await interaction.reply({
       content: '아래 버튼을 눌러 Microsoft 계정으로 로그인해주세요.',
       components: [row],
       flags: MessageFlags.Ephemeral,
     });
+
+    // 연결이 완료되면 이 메시지를 결과로 교체하기 위해 보관한다.
+    this.pendingRegisterService.set(interaction.user.id, interaction);
   }
 }
