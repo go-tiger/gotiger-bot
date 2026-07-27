@@ -37,7 +37,6 @@ export class SetupSelect {
 
     return interaction.reply({
       content: `등록 채널을 <#${channel.id}> 로 설정하고 패널을 설치했습니다.`,
-      flags: MessageFlags.Ephemeral,
     });
   }
 
@@ -60,7 +59,6 @@ export class SetupSelect {
 
     return interaction.reply({
       content: `로그 채널을 <#${channel.id}> 로 설정했습니다.`,
-      flags: MessageFlags.Ephemeral,
     });
   }
 }

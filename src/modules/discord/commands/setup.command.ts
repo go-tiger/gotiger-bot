@@ -63,7 +63,6 @@ export class SetupCommand {
     return interaction.reply({
       embeds: [embed],
       components: [row],
-      flags: MessageFlags.Ephemeral,
     });
   }
 

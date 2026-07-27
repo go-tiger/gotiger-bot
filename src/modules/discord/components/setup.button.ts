@@ -36,7 +36,7 @@ export class SetupButton {
       });
     }
 
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    await interaction.deferReply();
 
     try {
       const { registerChannel, logChannel } =
