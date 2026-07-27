@@ -1,0 +1,24 @@
+services:
+  gotiger-bot-green:
+    image: ghcr.io/go-tiger/gotiger-bot:latest
+    container_name: gotiger-bot-green
+    ports:
+      - '8021:8020'
+    network_mode: bridge
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Seoul
+    restart: unless-stopped
+
+  gotiger-bot-blue:
+    image: ghcr.io/go-tiger/gotiger-bot:latest
+    container_name: gotiger-bot-blue
+    ports:
+      - '8022:8020'
+    network_mode: bridge
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Seoul
+    restart: unless-stopped

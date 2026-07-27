@@ -1,0 +1,125 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  SERVICE_NAME: gotiger-bot
+  APP_PORT: 8020
+  NETWORK_NAME: gotiger_default
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write .env
+        run: |
+          cat <<EOF > .env
+          PORT=${{ env.APP_PORT }}
+          BASE_URL=${{ secrets.BASE_URL }}
+          DB_HOST=${{ secrets.DB_HOST }}
+          DB_PORT=${{ secrets.DB_PORT }}
+          DB_USERNAME=${{ secrets.DB_USERNAME }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_DATABASE=${{ secrets.DB_DATABASE }}
+          DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}
+          DISCORD_DEV_GUILD_ID=${{ secrets.DISCORD_DEV_GUILD_ID }}
+          MS_CLIENT_ID=${{ secrets.MS_CLIENT_ID }}
+          MS_REDIRECT_URI=${{ secrets.MS_REDIRECT_URI }}
+          EOF
+
+      - name: Copy .env and docker-compose.yml to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT }}
+          source: '.env,docker-compose.yml'
+          target: '/home/${{ secrets.SSH_USERNAME }}/site/${{ env.SERVICE_NAME }}'
+          timeout: 120s
+
+      - name: Blue-green deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            set -e
+            SERVICE=${{ env.SERVICE_NAME }}
+            NETWORK=${{ env.NETWORK_NAME }}
+            PORT=${{ env.APP_PORT }}
+            DEPLOY_DIR=/home/${{ secrets.SSH_USERNAME }}/site/$SERVICE
+
+            cd $DEPLOY_DIR
+
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+            docker compose pull
+
+            if docker ps --format '{{.Names}}' | grep -q "^${SERVICE}-blue$"; then
+              OLD=blue
+              NEW=green
+            else
+              OLD=green
+              NEW=blue
+            fi
+
+            docker compose up -d --force-recreate ${SERVICE}-${NEW}
+
+            READY=false
+            for i in $(seq 1 15); do
+              if docker exec ${SERVICE}-${NEW} sh -c "nc -z 127.0.0.1 $PORT"; then
+                READY=true
+                break
+              fi
+              sleep 5
+            done
+
+            if [ "$READY" != "true" ]; then
+              echo "Health check failed, rolling back"
+              docker compose stop ${SERVICE}-${NEW}
+              exit 1
+            fi
+
+            docker network disconnect $NETWORK ${SERVICE}-${OLD} 2>/dev/null || true
+            docker network connect --alias ${SERVICE}-active $NETWORK ${SERVICE}-${NEW}
+
+            docker exec nginx nginx -s reload
+
+            sleep 10
+            docker compose stop ${SERVICE}-${OLD}
+            docker image prune -f
