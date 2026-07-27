@@ -1,32 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { Context, SlashCommand } from 'necord';
-import type { SlashCommandContext } from 'necord';
 import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
-  MessageFlags,
-  PermissionFlagsBits,
 } from 'discord.js';
+import type { SendableChannels } from 'discord.js';
 import { REGISTER_BUTTON_ID } from '../discord.constants';
 
 @Injectable()
-export class RegisterPanelCommand {
-  @SlashCommand({
-    name: '등록',
-    description: '이 채널에 Minecraft 계정 연결 패널을 설치합니다.',
-    defaultMemberPermissions: PermissionFlagsBits.ManageGuild,
-    dmPermission: false,
-  })
-  async onRegisterPanel(@Context() [interaction]: SlashCommandContext) {
-    if (!interaction.channel?.isSendable()) {
-      return interaction.reply({
-        content: '이 채널에는 메시지를 보낼 수 없습니다.',
-        flags: MessageFlags.Ephemeral,
-      });
-    }
-
+export class RegisterPanelService {
+  /** 지정한 채널에 계정 연결 패널을 게시한다. */
+  async post(channel: SendableChannels): Promise<void> {
     const embed = new EmbedBuilder()
       .setTitle('Minecraft 계정 연결')
       .setDescription(
@@ -48,11 +33,6 @@ export class RegisterPanelCommand {
         .setStyle(ButtonStyle.Primary),
     );
 
-    await interaction.channel.send({ embeds: [embed], components: [row] });
-
-    return interaction.reply({
-      content: '등록 패널을 설치했습니다.',
-      flags: MessageFlags.Ephemeral,
-    });
+    await channel.send({ embeds: [embed], components: [row] });
   }
 }
