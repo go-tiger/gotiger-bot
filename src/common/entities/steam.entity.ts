@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { User } from './user.entity';
+import { Palworld } from './palworld.entity';
 
 @Entity('steams')
 export class Steam {
@@ -26,6 +27,9 @@ export class Steam {
 
   @Column({ type: 'varchar' })
   personaName: string;
+
+  @OneToOne(() => Palworld, (palworld) => palworld.steam)
+  palworld: Palworld;
 
   @CreateDateColumn()
   createdAt: Date;
