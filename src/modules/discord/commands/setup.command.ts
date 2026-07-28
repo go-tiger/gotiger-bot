@@ -1,27 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { Context, SlashCommand } from 'necord';
 import type { SlashCommandContext } from 'necord';
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-  MessageFlags,
-  PermissionFlagsBits,
-} from 'discord.js';
-import { GuildService } from '../../guild/services/guild.service';
-import {
-  SETUP_AUTO_BUTTON_ID,
-  SETUP_MANUAL_BUTTON_ID,
-} from '../discord.constants';
+import { MessageFlags, PermissionFlagsBits } from 'discord.js';
+import { SetupDashboardService } from '../services/setup-dashboard.service';
 
 @Injectable()
 export class SetupCommand {
-  constructor(private readonly guildService: GuildService) {}
+  constructor(private readonly dashboard: SetupDashboardService) {}
 
   @SlashCommand({
     name: '설정',
-    description: 'Minecraft 계정 연결 채널을 설정합니다.',
+    description: '이 서버에서 사용할 서비스와 채널을 설정합니다.',
     defaultMemberPermissions: PermissionFlagsBits.ManageGuild,
     dmPermission: false,
   })
@@ -33,40 +22,13 @@ export class SetupCommand {
       });
     }
 
-    const guild = await this.guildService.findOne(interaction.guildId);
+    // DB 조회 전에 먼저 응답해야 3초 제한에 걸리지 않는다.
+    await interaction.deferReply();
 
-    const embed = new EmbedBuilder()
-      .setTitle('채널 설정')
-      .setDescription(
-        '계정 등록 채널과 로그 채널을 설정합니다.\n' +
-          '자동으로 만들거나, 기존 채널을 지정할 수 있습니다.',
-      )
-      .setColor(0x5865f2)
-      .addFields({
-        name: '현재 설정',
-        value:
-          `· 등록 채널: ${this.format(guild?.registerChannelId)}\n` +
-          `· 로그 채널: ${this.format(guild?.logChannelId)}`,
-      });
-
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setCustomId(SETUP_AUTO_BUTTON_ID)
-        .setLabel('자동으로 채널 생성')
-        .setStyle(ButtonStyle.Primary),
-      new ButtonBuilder()
-        .setCustomId(SETUP_MANUAL_BUTTON_ID)
-        .setLabel('기존 채널 선택')
-        .setStyle(ButtonStyle.Secondary),
+    const { embeds, components } = await this.dashboard.buildHome(
+      interaction.guildId,
     );
 
-    return interaction.reply({
-      embeds: [embed],
-      components: [row],
-    });
-  }
-
-  private format(channelId?: string | null): string {
-    return channelId ? `<#${channelId}>` : '설정되지 않음';
+    return interaction.editReply({ embeds, components });
   }
 }

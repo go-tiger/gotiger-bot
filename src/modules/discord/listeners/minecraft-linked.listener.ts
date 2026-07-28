@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { ChannelManager, EmbedBuilder, MessageFlags } from 'discord.js';
-import { GuildService } from '../../guild/services/guild.service';
+import { GuildChannelService } from '../../guild/services/guild-channel.service';
 import { PendingRegisterService } from '../services/pending-register.service';
 import {
   MINECRAFT_LINKED_EVENT,
@@ -14,7 +14,7 @@ export class MinecraftLinkedListener {
 
   constructor(
     private readonly channels: ChannelManager,
-    private readonly guildService: GuildService,
+    private readonly guildChannelService: GuildChannelService,
     private readonly pendingRegisterService: PendingRegisterService,
   ) {}
 
@@ -41,10 +41,14 @@ export class MinecraftLinkedListener {
 
   private async notifyLogChannel(event: MinecraftLinkedEvent): Promise<void> {
     try {
-      const guild = await this.guildService.findOne(event.guildId);
-      if (!guild?.logChannelId) return;
+      const logChannelId = await this.guildChannelService.findChannelId(
+        event.guildId,
+        'minecraft',
+        'log',
+      );
+      if (!logChannelId) return;
 
-      const channel = await this.channels.fetch(guild.logChannelId);
+      const channel = await this.channels.fetch(logChannelId);
       if (!channel?.isSendable()) return;
 
       await channel.send({

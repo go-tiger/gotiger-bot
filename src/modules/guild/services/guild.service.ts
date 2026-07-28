@@ -35,4 +35,14 @@ export class GuildService {
 
     return this.guildRepository.save(guild);
   }
+
+  /** 구 채널 컬럼을 비운다. 마인크래프트 폴백을 끊을 때 사용한다. */
+  async clearChannels(guildId: string): Promise<void> {
+    const guild = await this.findOne(guildId);
+    if (!guild) return;
+
+    guild.registerChannelId = null;
+    guild.logChannelId = null;
+    await this.guildRepository.save(guild);
+  }
 }
