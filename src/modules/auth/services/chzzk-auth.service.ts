@@ -47,7 +47,8 @@ export class ChzzkAuthService {
 
     const chzzk = await this.link(discordId, channel, token);
     this.logger.log(
-      `치지직 연결 완료: discordId=${discordId} channel=${channel.channelName}`,
+      `치지직 연결 완료: discordId=${discordId} channel=${channel.channelName} ` +
+        `만료=${chzzk.expiresAt.toISOString()}`,
     );
 
     this.eventEmitter.emit(
@@ -72,9 +73,10 @@ export class ChzzkAuthService {
     const expiring = await this.chzzkRepository.find({
       where: { expiresAt: LessThanOrEqual(threshold) },
     });
-    if (expiring.length === 0) return;
 
+    // 대상이 없어도 남긴다. 로그가 없으면 크론이 도는지조차 알 수 없다.
     this.logger.log(`치지직 토큰 갱신 대상 ${expiring.length}건`);
+    if (expiring.length === 0) return;
 
     for (const chzzk of expiring) {
       try {
@@ -83,6 +85,11 @@ export class ChzzkAuthService {
         );
         this.applyToken(chzzk, token);
         await this.chzzkRepository.save(chzzk);
+
+        this.logger.log(
+          `치지직 토큰 갱신 완료: channel=${chzzk.channelName} ` +
+            `만료=${chzzk.expiresAt.toISOString()}`,
+        );
       } catch (error) {
         // 한 건이 실패해도 나머지는 계속 갱신한다.
         this.logger.error(
