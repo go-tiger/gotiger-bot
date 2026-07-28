@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Minecraft } from './minecraft.entity';
 import { Steam } from './steam.entity';
+import { Chzzk } from './chzzk.entity';
 
 @Entity('users')
 export class User {
@@ -22,6 +23,9 @@ export class User {
 
   @OneToOne(() => Steam, (steam) => steam.user)
   steam: Steam;
+
+  @OneToOne(() => Chzzk, (chzzk) => chzzk.user)
+  chzzk: Chzzk;
 
   @CreateDateColumn()
   createdAt: Date;
