@@ -3,7 +3,7 @@ import type { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from 'discord.js';
 /** 연동 대상의 큰 분류. 게임은 계정 인증, 플랫폼은 방송 알림을 담당한다. */
 export type ServiceCategory = 'game' | 'platform';
 
-export type ServiceId = 'minecraft' | 'palworld';
+export type ServiceId = 'minecraft' | 'palworld' | 'chzzk';
 
 export interface ServicePanel {
   embeds: EmbedBuilder[];
@@ -22,6 +22,13 @@ export interface LinkProvider {
   readonly label: string;
   /** 자동 생성 시 사용할 채널 이름. 카테고리는 분류별로 공유한다. */
   readonly channelNames: { register: string; log: string };
+  /**
+   * 계정 연결을 시작할 로그인 경로(BASE_URL 기준 상대 경로).
+   * 아직 연동이 준비되지 않은 서비스는 지정하지 않는다.
+   */
+  readonly loginPath?: string;
+  /** 로그인 버튼에 표시할 문구. */
+  readonly loginLabel?: string;
   /** 등록 채널에 게시할 계정 연결 패널. */
   buildPanel(): ServicePanel;
 }

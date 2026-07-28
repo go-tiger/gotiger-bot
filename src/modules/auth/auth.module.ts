@@ -1,16 +1,26 @@
 import { Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../../common/entities/user.entity';
 import { Minecraft } from '../../common/entities/minecraft.entity';
+import { Chzzk } from '../../common/entities/chzzk.entity';
 import { AuthController } from './auth.controller';
 import { AuthService } from './services/auth.service';
 import { MinecraftAuthService } from './services/minecraft-auth.service';
+import { ChzzkApiService } from './services/chzzk-api.service';
+import { ChzzkAuthService } from './services/chzzk-auth.service';
 import { msalProvider } from './providers/msal.provider';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Minecraft])],
+  imports: [HttpModule, TypeOrmModule.forFeature([User, Minecraft, Chzzk])],
   controllers: [AuthController],
-  providers: [AuthService, MinecraftAuthService, msalProvider],
-  exports: [AuthService],
+  providers: [
+    AuthService,
+    MinecraftAuthService,
+    ChzzkApiService,
+    ChzzkAuthService,
+    msalProvider,
+  ],
+  exports: [AuthService, ChzzkAuthService],
 })
 export class AuthModule {}

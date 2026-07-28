@@ -12,10 +12,12 @@ import { SetupDashboardService } from './services/setup-dashboard.service';
 import { RegisterPanelService } from './services/register-panel.service';
 import { PendingRegisterService } from './services/pending-register.service';
 import { MinecraftLinkedListener } from './listeners/minecraft-linked.listener';
+import { ChzzkLinkedListener } from './listeners/chzzk-linked.listener';
 import { LINK_PROVIDERS } from './providers/link-provider.interface';
 import { LinkProviderRegistry } from './providers/link-provider.registry';
 import { MinecraftProvider } from './providers/minecraft.provider';
 import { PalworldProvider } from './providers/palworld.provider';
+import { ChzzkProvider } from './providers/chzzk.provider';
 
 @Module({
   imports: [GuildModule],
@@ -32,16 +34,19 @@ import { PalworldProvider } from './providers/palworld.provider';
     RegisterPanelService,
     PendingRegisterService,
     MinecraftLinkedListener,
+    ChzzkLinkedListener,
     MinecraftProvider,
     PalworldProvider,
+    ChzzkProvider,
     {
       // 배열 순서가 곧 /설정 대시보드의 노출 순서다.
       provide: LINK_PROVIDERS,
       useFactory: (
         minecraft: MinecraftProvider,
         palworld: PalworldProvider,
-      ) => [minecraft, palworld],
-      inject: [MinecraftProvider, PalworldProvider],
+        chzzk: ChzzkProvider,
+      ) => [minecraft, palworld, chzzk],
+      inject: [MinecraftProvider, PalworldProvider, ChzzkProvider],
     },
     LinkProviderRegistry,
   ],

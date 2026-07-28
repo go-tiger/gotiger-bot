@@ -56,25 +56,26 @@ export class RegisterButton {
       });
     }
 
-    // TODO: 팰월드 Steam OpenID 연동은 아직 구현되지 않았다.
-    if (provider.id !== 'minecraft') {
+    // 로그인 경로가 없으면 아직 연동이 준비되지 않은 서비스다.
+    if (!provider.loginPath) {
       return interaction.editReply({
         content: `${provider.label} 계정 연결은 준비 중입니다.`,
       });
     }
 
     const baseUrl = this.configService.get<string>('BASE_URL') ?? '';
-    const url = `${baseUrl}/auth/login?d=${interaction.user.id}&g=${interaction.guildId}`;
+    const url = `${baseUrl}${provider.loginPath}?d=${interaction.user.id}&g=${interaction.guildId}`;
+    const loginLabel = provider.loginLabel ?? '로그인';
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setLabel('Microsoft 로그인')
+        .setLabel(loginLabel)
         .setStyle(ButtonStyle.Link)
         .setURL(url),
     );
 
     await interaction.editReply({
-      content: '아래 버튼을 눌러 Microsoft 계정으로 로그인해주세요.',
+      content: `아래 버튼을 눌러 ${provider.label} 계정으로 로그인해주세요.`,
       components: [row],
     });
 
