@@ -1,11 +1,11 @@
 import { Controller, Get, Param, Query, Redirect } from '@nestjs/common';
-import { AuthProviderRegistry } from './providers/auth-provider.registry';
-import { AuthCallbackDto } from './dto/auth-callback.dto';
-import { AuthLoginDto } from './dto/auth-login.dto';
+import { AuthStrategyRegistry } from '../../common/registries/auth-strategy.registry';
+import { AuthCallbackDto } from '../../common/dto/auth-callback.dto';
+import { AuthLoginDto } from '../../common/dto/auth-login.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly registry: AuthProviderRegistry) {}
+  constructor(private readonly registry: AuthStrategyRegistry) {}
 
   /** Discord 버튼에서 진입하는 경로. 서비스별 로그인 화면으로 넘긴다. */
   @Get(':service/login')

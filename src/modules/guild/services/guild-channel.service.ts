@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { GuildChannel } from '../../../common/entities/guild-channel.entity';
-import { GuildService } from './guild.service';
+import { GuildService } from '../guild.service';
 
 export type ChannelKind = 'register' | 'log';
 
