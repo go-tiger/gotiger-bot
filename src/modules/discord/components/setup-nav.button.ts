@@ -5,11 +5,9 @@ import { MessageFlags } from 'discord.js';
 import { SetupDashboardService } from '../services/setup-dashboard.service';
 import {
   SERVICE_CATEGORIES,
-  type ServiceCategory,
-} from '../providers/link-provider.interface';
-import {
   SETUP_CATEGORY_BUTTON_ID,
   SETUP_HOME_BUTTON_ID,
+  type ServiceCategory,
 } from '../discord.constants';
 
 /** /설정 의 분류 선택 ↔ 서비스 목록 사이 이동을 담당한다. */

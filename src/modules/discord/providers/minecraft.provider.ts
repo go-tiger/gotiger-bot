@@ -17,7 +17,7 @@ export class MinecraftProvider implements LinkProvider {
     register: '마인크래프트-등록',
     log: '마인크래프트-로그',
   };
-  readonly loginPath = '/auth/login';
+  readonly linkable = true;
   readonly loginLabel = 'Microsoft 로그인';
 
   buildPanel(): ServicePanel {

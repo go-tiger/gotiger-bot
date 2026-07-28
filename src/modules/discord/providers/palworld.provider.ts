@@ -17,6 +17,7 @@ export class PalworldProvider implements LinkProvider {
     register: '팰월드-등록',
     log: '팰월드-로그',
   };
+  readonly linkable = false;
 
   buildPanel(): ServicePanel {
     const embed = new EmbedBuilder()

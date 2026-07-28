@@ -13,8 +13,8 @@ import { GuildChannelService } from '../../guild/services/guild-channel.service'
 import { GuildServiceConfigService } from '../../guild/services/guild-service-config.service';
 import { SetupDashboardService } from '../services/setup-dashboard.service';
 import { LinkProviderRegistry } from '../providers/link-provider.registry';
-import type { ServiceCategory } from '../providers/link-provider.interface';
 import {
+  type ServiceCategory,
   SETUP_DISABLE_CANCEL_BUTTON_ID,
   SETUP_DISABLE_CONFIRM_BUTTON_ID,
   SETUP_TOGGLE_BUTTON_ID,

@@ -17,7 +17,7 @@ export class ChzzkProvider implements LinkProvider {
     register: '치지직-연결',
     log: '치지직-로그',
   };
-  readonly loginPath = '/auth/chzzk/login';
+  readonly linkable = true;
   readonly loginLabel = '치지직 로그인';
 
   buildPanel(): ServicePanel {

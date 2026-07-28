@@ -8,18 +8,16 @@ import {
 import { GuildChannelService } from '../../guild/services/guild-channel.service';
 import { GuildServiceConfigService } from '../../guild/services/guild-service-config.service';
 import { LinkProviderRegistry } from '../providers/link-provider.registry';
-import {
-  CATEGORY_EMOJIS,
-  CATEGORY_LABELS,
-  SERVICE_CATEGORIES,
-  type LinkProvider,
-  type ServiceCategory,
-} from '../providers/link-provider.interface';
+import type { LinkProvider } from '../providers/link-provider.interface';
 import {
   buildCategoryButtonId,
   buildServiceButtonId,
   buildToggleButtonId,
+  CATEGORY_EMOJIS,
+  CATEGORY_LABELS,
+  SERVICE_CATEGORIES,
   SETUP_HOME_BUTTON_ID,
+  type ServiceCategory,
 } from '../discord.constants';
 
 /** 한 행에 버튼 5개까지 담을 수 있다. */

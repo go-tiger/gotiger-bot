@@ -8,7 +8,7 @@ import {
   ButtonStyle,
   MessageFlags,
 } from 'discord.js';
-import { REGISTER_BUTTON_ID } from '../discord.constants';
+import { buildLoginPath, REGISTER_BUTTON_ID } from '../discord.constants';
 import { PendingRegisterService } from '../services/pending-register.service';
 import { GuildServiceConfigService } from '../../guild/services/guild-service-config.service';
 import { LinkProviderRegistry } from '../providers/link-provider.registry';
@@ -56,15 +56,15 @@ export class RegisterButton {
       });
     }
 
-    // 로그인 경로가 없으면 아직 연동이 준비되지 않은 서비스다.
-    if (!provider.loginPath) {
+    if (!provider.linkable) {
       return interaction.editReply({
         content: `${provider.label} 계정 연결은 준비 중입니다.`,
       });
     }
 
     const baseUrl = this.configService.get<string>('BASE_URL') ?? '';
-    const url = `${baseUrl}${provider.loginPath}?d=${interaction.user.id}&g=${interaction.guildId}`;
+    const loginPath = buildLoginPath(provider.id);
+    const url = `${baseUrl}${loginPath}?d=${interaction.user.id}&g=${interaction.guildId}`;
     const loginLabel = provider.loginLabel ?? '로그인';
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(

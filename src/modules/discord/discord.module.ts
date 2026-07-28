@@ -13,11 +13,20 @@ import { RegisterPanelService } from './services/register-panel.service';
 import { PendingRegisterService } from './services/pending-register.service';
 import { MinecraftLinkedListener } from './listeners/minecraft-linked.listener';
 import { ChzzkLinkedListener } from './listeners/chzzk-linked.listener';
-import { LINK_PROVIDERS } from './providers/link-provider.interface';
+import {
+  LINK_PROVIDERS,
+  type LinkProvider,
+} from './providers/link-provider.interface';
 import { LinkProviderRegistry } from './providers/link-provider.registry';
 import { MinecraftProvider } from './providers/minecraft.provider';
 import { PalworldProvider } from './providers/palworld.provider';
 import { ChzzkProvider } from './providers/chzzk.provider';
+
+/**
+ * 배열 순서가 곧 /설정 대시보드의 노출 순서다.
+ * 새 서비스는 LinkProvider 구현체를 만들어 여기에만 추가하면 된다.
+ */
+const linkProviders = [MinecraftProvider, PalworldProvider, ChzzkProvider];
 
 @Module({
   imports: [GuildModule],
@@ -35,18 +44,11 @@ import { ChzzkProvider } from './providers/chzzk.provider';
     PendingRegisterService,
     MinecraftLinkedListener,
     ChzzkLinkedListener,
-    MinecraftProvider,
-    PalworldProvider,
-    ChzzkProvider,
+    ...linkProviders,
     {
-      // 배열 순서가 곧 /설정 대시보드의 노출 순서다.
       provide: LINK_PROVIDERS,
-      useFactory: (
-        minecraft: MinecraftProvider,
-        palworld: PalworldProvider,
-        chzzk: ChzzkProvider,
-      ) => [minecraft, palworld, chzzk],
-      inject: [MinecraftProvider, PalworldProvider, ChzzkProvider],
+      useFactory: (...providers: LinkProvider[]) => providers,
+      inject: linkProviders,
     },
     LinkProviderRegistry,
   ],

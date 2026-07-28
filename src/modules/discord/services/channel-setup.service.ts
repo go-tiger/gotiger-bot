@@ -6,10 +6,8 @@ import {
   type Guild as DiscordGuild,
   type TextChannel,
 } from 'discord.js';
-import {
-  CATEGORY_CHANNEL_NAMES,
-  type LinkProvider,
-} from '../providers/link-provider.interface';
+import { CATEGORY_CHANNEL_NAMES } from '../discord.constants';
+import type { LinkProvider } from '../providers/link-provider.interface';
 
 export interface CreatedChannels {
   registerChannel: TextChannel;

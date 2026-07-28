@@ -1,10 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import {
-  LINK_PROVIDERS,
-  type LinkProvider,
-  type ServiceCategory,
-  type ServiceId,
-} from './link-provider.interface';
+import { LINK_PROVIDERS, type LinkProvider } from './link-provider.interface';
+import type { ServiceCategory, ServiceId } from '../discord.constants';
 
 @Injectable()
 export class LinkProviderRegistry {
