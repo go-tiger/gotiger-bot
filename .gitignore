@@ -54,3 +54,6 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# 재설계 전 원본 소스 (참조용, main 브랜치에 보존됨)
+/src-bak
