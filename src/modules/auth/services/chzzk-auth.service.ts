@@ -9,6 +9,10 @@ import {
   CHZZK_LINKED_EVENT,
   ChzzkLinkedEvent,
 } from '../../../common/events/chzzk-linked.event';
+import {
+  CHZZK_TOKEN_REFRESHED_EVENT,
+  ChzzkTokenRefreshedEvent,
+} from '../../../common/events/chzzk-token-refreshed.event';
 import { ChzzkApiService, type ChzzkToken } from './chzzk-api.service';
 
 /** 만료 이 시간 전이면 갱신 대상으로 본다. */
@@ -45,7 +49,7 @@ export class ChzzkAuthService {
       token.accessToken,
     );
 
-    const chzzk = await this.link(discordId, channel, token);
+    const chzzk = await this.link(discordId, guildId, channel, token);
     this.logger.log(
       `치지직 연결 완료: discordId=${discordId} channel=${channel.channelName} ` +
         `만료=${chzzk.expiresAt.toISOString()}`,
@@ -90,6 +94,12 @@ export class ChzzkAuthService {
           `치지직 토큰 갱신 완료: channel=${chzzk.channelName} ` +
             `만료=${chzzk.expiresAt.toISOString()}`,
         );
+
+        // 세션은 기존 토큰으로 열려 있으므로 새 토큰으로 다시 연결한다.
+        this.eventEmitter.emit(
+          CHZZK_TOKEN_REFRESHED_EVENT,
+          new ChzzkTokenRefreshedEvent(chzzk.channelId),
+        );
       } catch (error) {
         // 한 건이 실패해도 나머지는 계속 갱신한다.
         this.logger.error(
@@ -117,6 +127,7 @@ export class ChzzkAuthService {
 
   private async link(
     discordId: string,
+    guildId: string,
     channel: { channelId: string; channelName: string },
     token: ChzzkToken,
   ): Promise<Chzzk> {
@@ -144,6 +155,8 @@ export class ChzzkAuthService {
 
     chzzk.channelId = channel.channelId;
     chzzk.channelName = channel.channelName;
+    // 다른 서버에서 다시 연결하면 최신 서버로 갱신한다.
+    chzzk.guildId = guildId;
     this.applyToken(chzzk, token);
 
     return this.chzzkRepository.save(chzzk);

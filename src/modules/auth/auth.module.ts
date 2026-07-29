@@ -9,6 +9,7 @@ import { AuthService } from './auth.service';
 import { MinecraftAuthService } from './services/minecraft-auth.service';
 import { ChzzkApiService } from './services/chzzk-api.service';
 import { ChzzkAuthService } from './services/chzzk-auth.service';
+import { ChzzkSessionService } from './services/chzzk-session.service';
 import { msalProvider } from '../../common/config/msal.config';
 import {
   AUTH_STRATEGIES,
@@ -29,6 +30,7 @@ const authStrategies = [MinecraftAuthStrategy, ChzzkAuthStrategy];
     MinecraftAuthService,
     ChzzkApiService,
     ChzzkAuthService,
+    ChzzkSessionService,
     msalProvider,
     ...authStrategies,
     {

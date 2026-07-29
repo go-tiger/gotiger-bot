@@ -86,6 +86,55 @@ export class ChzzkApiService {
     };
   }
 
+  /**
+   * 유저 세션 URL 을 발급받는다. auth 토큰이 쿼리에 포함된 채로 내려오며,
+   * 이 URL 에 socket.io 로 접속한다. 유저당 동시 연결은 3개까지다.
+   */
+  async createUserSession(
+    tokenType: string,
+    accessToken: string,
+  ): Promise<string> {
+    const data = await this.request<{ content: { url: string } }>(
+      () =>
+        this.httpService.get(`${CHZZK_URLS.openApi}/open/v1/sessions/auth`, {
+          headers: this.authHeaders(tokenType, accessToken),
+        }),
+      '세션 발급',
+    );
+
+    return data.content.url;
+  }
+
+  /** 세션에 후원 이벤트를 구독한다. sessionKey 는 소켓 연결 후 얻는다. */
+  async subscribeDonation(
+    tokenType: string,
+    accessToken: string,
+    sessionKey: string,
+  ): Promise<void> {
+    await this.request(
+      () =>
+        this.httpService.post(
+          `${CHZZK_URLS.openApi}/open/v1/sessions/events/subscribe/donation`,
+          {},
+          {
+            headers: this.authHeaders(tokenType, accessToken),
+            params: { sessionKey },
+          },
+        ),
+      '후원 이벤트 구독',
+    );
+  }
+
+  private authHeaders(
+    tokenType: string,
+    accessToken: string,
+  ): Record<string, string> {
+    return {
+      Authorization: `${tokenType} ${accessToken}`,
+      'Content-Type': 'application/json',
+    };
+  }
+
   private async requestToken(
     body: Record<string, string>,
   ): Promise<ChzzkToken> {

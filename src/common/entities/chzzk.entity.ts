@@ -25,6 +25,14 @@ export class Chzzk {
   @Column({ type: 'varchar', unique: true })
   channelId: string;
 
+  /**
+   * 연결을 진행한 Discord 서버. 후원 이벤트를 어디에 게시할지 판단한다.
+   * 소켓 이벤트에는 길드 정보가 없어 연결 시점에 저장해 둔다.
+   * 이 컬럼 도입 전에 연결된 행은 값이 없으므로 재연결 전까지 null 이다.
+   */
+  @Column({ type: 'varchar', nullable: true })
+  guildId: string | null;
+
   @Column({ type: 'varchar' })
   channelName: string;
 

@@ -21,6 +21,7 @@ import { RegisterPanelService } from './auth/register-panel.service';
 import { PendingRegisterService } from './auth/pending-register.service';
 import { MinecraftLinkedListener } from './auth/minecraft-linked.listener';
 import { ChzzkLinkedListener } from './auth/chzzk-linked.listener';
+import { ChzzkDonationListener } from './auth/chzzk-donation.listener';
 
 /**
  * 배열 순서가 곧 /설정 대시보드의 노출 순서다.
@@ -46,6 +47,7 @@ const linkProviders = [MinecraftProvider, PalworldProvider, ChzzkProvider];
     PendingRegisterService,
     MinecraftLinkedListener,
     ChzzkLinkedListener,
+    ChzzkDonationListener,
     ...linkProviders,
     {
       provide: LINK_PROVIDERS,
