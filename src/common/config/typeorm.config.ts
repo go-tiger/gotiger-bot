@@ -13,6 +13,7 @@ export const typeOrmConfig: TypeOrmModuleAsyncOptions = {
     entities: [__dirname + '/../entities/**/*.entity{.ts,.js}'],
     namingStrategy: new SnakeNamingStrategy(),
     synchronize: true,
+    // dropSchema: true,
   }),
   inject: [ConfigService],
 };
