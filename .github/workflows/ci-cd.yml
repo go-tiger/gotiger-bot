@@ -56,8 +56,14 @@ jobs:
           DB_DATABASE=${{ secrets.DB_DATABASE }}
           DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}
           DISCORD_DEV_GUILD_ID=${{ secrets.DISCORD_DEV_GUILD_ID }}
+          ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}
           MS_CLIENT_ID=${{ secrets.MS_CLIENT_ID }}
           MS_REDIRECT_URI=${{ secrets.MS_REDIRECT_URI }}
+          CHZZK_CLIENT_ID=${{ secrets.CHZZK_CLIENT_ID }}
+          CHZZK_CLIENT_SECRET=${{ secrets.CHZZK_CLIENT_SECRET }}
+          CHZZK_REDIRECT_URI=${{ secrets.CHZZK_REDIRECT_URI }}
+          STEAM_API_KEY=${{ secrets.STEAM_API_KEY }}
+          STEAM_REDIRECT_URI=${{ secrets.STEAM_REDIRECT_URI }}
           EOF
 
       - name: Copy .env and docker-compose.yml to server
