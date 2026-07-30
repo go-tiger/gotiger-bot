@@ -12,6 +12,8 @@ import { PlatformsModule } from './modules/platforms/platforms.module';
 import { GamesModule } from './modules/games/games.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { GuildModule } from './modules/guild/guild.module';
+import { SessionModule } from './modules/session/session.module';
+import { DonationModule } from './modules/donation/donation.module';
 import { DiscordModule } from './discord/discord.module';
 
 @Module({
@@ -25,6 +27,8 @@ import { DiscordModule } from './discord/discord.module';
     GamesModule,
     AuthModule,
     GuildModule,
+    SessionModule,
+    DonationModule,
     DiscordModule,
   ],
   controllers: [AppController],
