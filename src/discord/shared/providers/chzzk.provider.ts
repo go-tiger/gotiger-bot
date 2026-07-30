@@ -5,7 +5,10 @@ import {
   ButtonStyle,
   EmbedBuilder,
 } from 'discord.js';
-import { buildRegisterButtonId } from '../../../discord/shared/discord.constants';
+import {
+  buildRegisterButtonId,
+  LINK_STATUS_BUTTON_ID,
+} from '../discord.constants';
 import type { LinkProvider, ServicePanel } from './link-provider.interface';
 
 @Injectable()
@@ -18,7 +21,9 @@ export class ChzzkProvider implements LinkProvider {
     log: '치지직-로그',
   };
   readonly linkable = true;
+  readonly authService = 'chzzk' as const;
   readonly loginLabel = '치지직 로그인';
+  readonly hasGameServers = false;
 
   buildPanel(): ServicePanel {
     const embed = new EmbedBuilder()
@@ -31,7 +36,8 @@ export class ChzzkProvider implements LinkProvider {
       .addFields({
         name: '안내',
         value:
-          '· 연결 후 후원 이벤트를 이 서버에서 받아볼 수 있습니다.\n' +
+          '· 게임서버에 접속해 있는 동안 후원이 게임으로 전달됩니다.\n' +
+          '· 게임 계정도 함께 연결해야 전달 대상을 찾을 수 있습니다.\n' +
           '· 발급되는 링크는 본인만 사용해주세요.',
       });
 
@@ -40,6 +46,10 @@ export class ChzzkProvider implements LinkProvider {
         .setCustomId(buildRegisterButtonId(this.id))
         .setLabel('채널 연결하기')
         .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId(LINK_STATUS_BUTTON_ID)
+        .setLabel('내 연동 상태')
+        .setStyle(ButtonStyle.Secondary),
     );
 
     return { embeds: [embed], components: [row] };

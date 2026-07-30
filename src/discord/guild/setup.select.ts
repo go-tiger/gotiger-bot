@@ -10,9 +10,9 @@ import { MessageFlags } from 'discord.js';
 import type { Channel, Collection } from 'discord.js';
 import { GuildChannelService } from '../../modules/guild/services/guild-channel.service';
 import { GuildServiceConfigService } from '../../modules/guild/services/guild-service-config.service';
-import { RegisterPanelService } from '../auth/register-panel.service';
-import { LinkProviderRegistry } from '../../discord/shared/providers/link-provider.registry';
-import { SETUP_SELECT_ID } from '../../discord/shared/discord.constants';
+import { RegisterPanelService } from '../streamer/register-panel.service';
+import { LinkProviderRegistry } from '../shared/providers/link-provider.registry';
+import { SETUP_SELECT_ID } from '../shared/discord.constants';
 import type { ChannelKind } from '../../common/constants/services';
 
 @Injectable()

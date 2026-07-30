@@ -13,17 +13,15 @@ import {
 import { GuildChannelService } from '../../modules/guild/services/guild-channel.service';
 import { GuildServiceConfigService } from '../../modules/guild/services/guild-service-config.service';
 import { ChannelSetupService } from './channel-setup.service';
-import { RegisterPanelService } from '../auth/register-panel.service';
-import { LinkProviderRegistry } from '../../discord/shared/providers/link-provider.registry';
-import type { LinkProvider } from '../../discord/shared/providers/link-provider.interface';
+import { RegisterPanelService } from '../streamer/register-panel.service';
+import { LinkProviderRegistry } from '../shared/providers/link-provider.registry';
+import type { LinkProvider } from '../shared/providers/link-provider.interface';
 import {
   SETUP_AUTO_BUTTON_ID,
-  SETUP_MANUAL_BUTTON_ID,
   SETUP_SERVICE_BUTTON_ID,
   buildAutoButtonId,
-  buildManualButtonId,
   buildSelectId,
-} from '../../discord/shared/discord.constants';
+} from '../shared/discord.constants';
 
 @Injectable()
 export class SetupButton {
@@ -37,7 +35,7 @@ export class SetupButton {
     private readonly registry: LinkProviderRegistry,
   ) {}
 
-  /** 대시보드에서 서비스를 고르면 자동/수동 선택지를 보여준다. */
+  /** 현재 설정을 보여주고 자동 생성 버튼과 채널 선택 메뉴를 함께 제공한다. */
   @Button(SETUP_SERVICE_BUTTON_ID)
   async onService(
     @Context() [interaction]: ButtonContext,
@@ -60,7 +58,7 @@ export class SetupButton {
       .setTitle(`${provider.label} 채널 설정`)
       .setDescription(
         '등록 채널과 로그 채널을 설정합니다.\n' +
-          '자동으로 만들거나, 기존 채널을 지정할 수 있습니다.',
+          '자동으로 만들거나, 아래 메뉴에서 기존 채널을 지정할 수 있습니다.',
       )
       .setColor(0x5865f2)
       .addFields({
@@ -70,20 +68,28 @@ export class SetupButton {
           `· 로그 채널: ${this.format(channels.get(`${provider.id}:log`))}`,
       });
 
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setCustomId(buildAutoButtonId(provider.id))
-        .setLabel('자동으로 채널 생성')
-        .setStyle(ButtonStyle.Primary),
-      new ButtonBuilder()
-        .setCustomId(buildManualButtonId(provider.id))
-        .setLabel('기존 채널 선택')
-        .setStyle(ButtonStyle.Secondary),
-    );
-
     return interaction.editReply({
       embeds: [embed],
-      components: [row],
+      components: [
+        new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder()
+            .setCustomId(buildAutoButtonId(provider.id))
+            .setLabel('자동으로 채널 생성')
+            .setStyle(ButtonStyle.Primary),
+        ),
+        new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(
+          new ChannelSelectMenuBuilder()
+            .setCustomId(buildSelectId(provider.id, 'register'))
+            .setPlaceholder(`${provider.label} 등록 채널 선택`)
+            .setChannelTypes(ChannelType.GuildText),
+        ),
+        new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(
+          new ChannelSelectMenuBuilder()
+            .setCustomId(buildSelectId(provider.id, 'log'))
+            .setPlaceholder(`${provider.label} 로그 채널 선택`)
+            .setChannelTypes(ChannelType.GuildText),
+        ),
+      ],
     });
   }
 
@@ -129,40 +135,6 @@ export class SetupButton {
           '채널을 생성하지 못했습니다. 봇에게 채널 관리 권한이 있는지 확인해주세요.',
       });
     }
-  }
-
-  @Button(SETUP_MANUAL_BUTTON_ID)
-  async onManual(
-    @Context() [interaction]: ButtonContext,
-    @ComponentParam('service') service: string,
-  ) {
-    const provider = this.registry.find(service);
-    if (!provider) {
-      return this.replyUnknown(interaction);
-    }
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-
-    if (!(await this.ensureEnabled(interaction, provider))) return;
-
-    const rows = [
-      new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(
-        new ChannelSelectMenuBuilder()
-          .setCustomId(buildSelectId(provider.id, 'register'))
-          .setPlaceholder(`${provider.label} 등록 채널 선택`)
-          .setChannelTypes(ChannelType.GuildText),
-      ),
-      new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(
-        new ChannelSelectMenuBuilder()
-          .setCustomId(buildSelectId(provider.id, 'log'))
-          .setPlaceholder(`${provider.label} 로그 채널 선택`)
-          .setChannelTypes(ChannelType.GuildText),
-      ),
-    ];
-
-    return interaction.editReply({
-      content: `${provider.label}에 사용할 채널을 선택해주세요.`,
-      components: rows,
-    });
   }
 
   private saveChannels(

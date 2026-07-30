@@ -5,6 +5,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import type {
+  ChannelKind,
+  ServiceCategory,
+  ServiceId,
+} from '../constants/services';
 
 /**
  * 길드별 · 서비스별 채널 매핑.
@@ -15,17 +20,15 @@ export class GuildChannel {
   @PrimaryColumn({ type: 'varchar' })
   guildId: string;
 
-  /** 'minecraft' | 'palworld' | ... */
   @PrimaryColumn({ type: 'varchar' })
-  service: string;
+  service: ServiceId;
 
-  /** 'register' | 'log' */
   @PrimaryColumn({ type: 'varchar' })
-  kind: string;
+  kind: ChannelKind;
 
-  /** 'game' | 'platform'. 분류 단위 조회를 위해 함께 저장한다. */
+  /** 분류 단위 조회를 위해 함께 저장한다. */
   @Column({ type: 'varchar' })
-  category: string;
+  category: ServiceCategory;
 
   @Column({ type: 'varchar' })
   channelId: string;

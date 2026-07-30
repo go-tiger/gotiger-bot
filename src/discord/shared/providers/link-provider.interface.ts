@@ -1,5 +1,6 @@
 import type { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from 'discord.js';
 import type {
+  AuthServiceId,
   ServiceCategory,
   ServiceId,
 } from '../../../common/constants/services';
@@ -10,7 +11,7 @@ export interface ServicePanel {
 }
 
 /**
- * 하나의 연동 서비스(마인크래프트, 팰월드 ...)를 기술한다.
+ * 하나의 연동 서비스(팰월드, 치지직 ...)를 기술한다.
  * 새 서비스를 추가할 때는 이 인터페이스 구현체를 만들어
  * DiscordModule 의 linkProviders 배열에 추가하기만 하면 된다.
  */
@@ -23,8 +24,15 @@ export interface LinkProvider {
   readonly channelNames: { register: string; log: string };
   /** 계정 연결을 지원하는지. false 면 "준비 중" 안내만 보여준다. */
   readonly linkable: boolean;
+  /**
+   * 계정 연결에 쓰는 인증 서비스. 게임과 다를 수 있다.
+   * (팰월드는 steam, 마인크래프트는 microsoft)
+   */
+  readonly authService?: AuthServiceId;
   /** 로그인 버튼에 표시할 문구. */
   readonly loginLabel?: string;
+  /** 게임서버를 등록해 후원을 전달할 수 있는지. 플랫폼은 서버가 없다. */
+  readonly hasGameServers: boolean;
   /** 등록 채널에 게시할 계정 연결 패널. */
   buildPanel(): ServicePanel;
 }

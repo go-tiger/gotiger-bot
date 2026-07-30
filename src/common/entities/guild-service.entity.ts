@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import type { ServiceCategory, ServiceId } from '../constants/services';
 
 /**
  * 길드가 사용하기로 선택한 연동 서비스.
@@ -16,13 +17,12 @@ export class GuildServiceConfig {
   @PrimaryColumn({ type: 'varchar' })
   guildId: string;
 
-  /** 'minecraft' | 'palworld' | 'chzzk' | ... */
   @PrimaryColumn({ type: 'varchar' })
-  service: string;
+  service: ServiceId;
 
-  /** 'game' | 'platform'. 분류 단위 조회를 위해 함께 저장한다. */
+  /** 분류 단위 조회를 위해 함께 저장한다. */
   @Column({ type: 'varchar' })
-  category: string;
+  category: ServiceCategory;
 
   @Column({ type: 'boolean', default: true })
   enabled: boolean;

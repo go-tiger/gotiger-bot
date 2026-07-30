@@ -6,10 +6,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NecordModule } from 'necord';
 import { typeOrmConfig } from './common/config/typeorm.config';
 import { discordConfig } from './common/config/discord.config';
-import { AuthModule } from './modules/auth/auth.module';
-import { DiscordModule } from './discord/discord.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { PlatformsModule } from './modules/platforms/platforms.module';
+import { GamesModule } from './modules/games/games.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { GuildModule } from './modules/guild/guild.module';
+import { SessionModule } from './modules/session/session.module';
+import { LinkModule } from './modules/link/link.module';
+import { DonationModule } from './modules/donation/donation.module';
+import { DiscordModule } from './discord/discord.module';
 
 @Module({
   imports: [
@@ -18,7 +24,13 @@ import { AppService } from './app.service';
     ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync(typeOrmConfig),
     NecordModule.forRootAsync(discordConfig),
+    PlatformsModule,
+    GamesModule,
     AuthModule,
+    GuildModule,
+    SessionModule,
+    LinkModule,
+    DonationModule,
     DiscordModule,
   ],
   controllers: [AppController],

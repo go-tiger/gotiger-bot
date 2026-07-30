@@ -9,18 +9,16 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
+  // 종료 시 치지직 소켓을 정리하려면 OnApplicationShutdown 이 불려야 한다.
   app.enableShutdownHooks();
 
-  process.on('SIGINT', async () => {
-    await app.close();
-    process.exit(0);
-  });
+  const shutdown = () => {
+    void app.close().then(() => process.exit(0));
+  };
 
-  process.on('SIGTERM', async () => {
-    await app.close();
-    process.exit(0);
-  });
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
 
   await app.listen(configService.get<number>('PORT') ?? 3000);
 }
-bootstrap();
+void bootstrap();

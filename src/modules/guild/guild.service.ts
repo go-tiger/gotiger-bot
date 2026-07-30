@@ -14,35 +14,11 @@ export class GuildService {
     return this.guildRepository.findOne({ where: { guildId } });
   }
 
-  async setChannels(
-    guildId: string,
-    channels: { registerChannelId?: string; logChannelId?: string },
-  ): Promise<Guild> {
-    const guild =
-      (await this.findOne(guildId)) ??
-      this.guildRepository.create({
-        guildId,
-        registerChannelId: null,
-        logChannelId: null,
-      });
+  /** 게임서버 등록처럼 FK 가 걸리는 작업 전에 길드 행을 보장한다. */
+  async ensure(guildId: string): Promise<Guild> {
+    const existing = await this.findOne(guildId);
+    if (existing) return existing;
 
-    if (channels.registerChannelId !== undefined) {
-      guild.registerChannelId = channels.registerChannelId;
-    }
-    if (channels.logChannelId !== undefined) {
-      guild.logChannelId = channels.logChannelId;
-    }
-
-    return this.guildRepository.save(guild);
-  }
-
-  /** 구 채널 컬럼을 비운다. 마인크래프트 폴백을 끊을 때 사용한다. */
-  async clearChannels(guildId: string): Promise<void> {
-    const guild = await this.findOne(guildId);
-    if (!guild) return;
-
-    guild.registerChannelId = null;
-    guild.logChannelId = null;
-    await this.guildRepository.save(guild);
+    return this.guildRepository.save(this.guildRepository.create({ guildId }));
   }
 }

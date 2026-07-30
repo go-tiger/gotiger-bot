@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { ChzzkAuthService } from '../services/chzzk-auth.service';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { ChzzkAuthService } from '../../platforms/chzzk/chzzk-auth.service';
 import type { AuthStrategy } from '../../../common/interfaces/auth-strategy.interface';
 
 @Injectable()
@@ -12,7 +12,12 @@ export class ChzzkAuthStrategy implements AuthStrategy {
     return this.chzzkAuthService.createAuthUrl(discordId, guildId);
   }
 
-  async handleCallback(code: string, state: string): Promise<string> {
+  async handleCallback(query: Record<string, string>): Promise<string> {
+    const { code, state } = query;
+    if (!code || !state) {
+      throw new BadRequestException('잘못된 인증 요청입니다.');
+    }
+
     const chzzk = await this.chzzkAuthService.handleCallback(code, state);
 
     return `${chzzk.channelName} 채널 연결이 완료되었습니다. 이 창을 닫아주세요.`;

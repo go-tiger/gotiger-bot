@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import type { ServiceId } from '../constants/services';
+import type { AuthServiceId } from '../constants/services';
 import {
   AUTH_STRATEGIES,
   type AuthStrategy,
@@ -7,7 +7,7 @@ import {
 
 @Injectable()
 export class AuthStrategyRegistry {
-  private readonly byIdMap: Map<ServiceId, AuthStrategy>;
+  private readonly byIdMap: Map<AuthServiceId, AuthStrategy>;
 
   constructor(@Inject(AUTH_STRATEGIES) strategies: AuthStrategy[]) {
     this.byIdMap = new Map(
@@ -16,7 +16,7 @@ export class AuthStrategyRegistry {
   }
 
   getOrThrow(id: string): AuthStrategy {
-    const strategy = this.byIdMap.get(id as ServiceId);
+    const strategy = this.byIdMap.get(id as AuthServiceId);
     if (!strategy) {
       throw new NotFoundException(`알 수 없는 서비스입니다: ${id}`);
     }

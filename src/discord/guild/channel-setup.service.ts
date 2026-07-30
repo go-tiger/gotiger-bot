@@ -7,7 +7,7 @@ import {
   type TextChannel,
 } from 'discord.js';
 import { CATEGORY_CHANNEL_NAMES } from '../../common/constants/services';
-import type { LinkProvider } from '../../discord/shared/providers/link-provider.interface';
+import type { LinkProvider } from '../shared/providers/link-provider.interface';
 
 export interface CreatedChannels {
   registerChannel: TextChannel;

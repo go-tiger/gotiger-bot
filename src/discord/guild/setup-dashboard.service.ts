@@ -7,8 +7,8 @@ import {
 } from 'discord.js';
 import { GuildChannelService } from '../../modules/guild/services/guild-channel.service';
 import { GuildServiceConfigService } from '../../modules/guild/services/guild-service-config.service';
-import { LinkProviderRegistry } from '../../discord/shared/providers/link-provider.registry';
-import type { LinkProvider } from '../../discord/shared/providers/link-provider.interface';
+import { LinkProviderRegistry } from '../shared/providers/link-provider.registry';
+import type { LinkProvider } from '../shared/providers/link-provider.interface';
 import {
   CATEGORY_EMOJIS,
   CATEGORY_LABELS,
@@ -17,10 +17,11 @@ import {
 } from '../../common/constants/services';
 import {
   buildCategoryButtonId,
+  buildGameServerHomeId,
   buildServiceButtonId,
   buildToggleButtonId,
   SETUP_HOME_BUTTON_ID,
-} from '../../discord/shared/discord.constants';
+} from '../shared/discord.constants';
 
 /** 한 행에 버튼 5개까지 담을 수 있다. */
 const BUTTONS_PER_ROW = 5;
@@ -42,7 +43,7 @@ export class SetupDashboardService {
 
   /** 1단계: 설정할 분류(게임/플랫폼)를 고르는 화면. */
   async buildHome(guildId: string): Promise<DashboardView> {
-    const enabled = await this.loadEnabled(guildId);
+    const enabled = await this.guildServiceConfigService.findEnabled(guildId);
 
     const embed = new EmbedBuilder()
       .setTitle('서버 설정')
@@ -78,7 +79,7 @@ export class SetupDashboardService {
     };
   }
 
-  /** 2단계: 분류 안의 서비스를 켜고 끄는 화면. */
+  /** 2단계: 분류 안의 서비스를 켜고 끄고, 채널·게임서버를 설정하는 화면. */
   async buildCategory(
     guildId: string,
     category: ServiceCategory,
@@ -106,10 +107,7 @@ export class SetupDashboardService {
     }
 
     const channels = await this.guildChannelService.findAllForGuild(guildId);
-    const enabled = await this.guildServiceConfigService.findEnabled(
-      guildId,
-      channels,
-    );
+    const enabled = await this.guildServiceConfigService.findEnabled(guildId);
 
     embed
       .setDescription(
@@ -126,12 +124,6 @@ export class SetupDashboardService {
       embeds: [embed],
       components: this.buildRows(providers, enabled, backRow),
     };
-  }
-
-  private async loadEnabled(guildId: string): Promise<Set<string>> {
-    const channels = await this.guildChannelService.findAllForGuild(guildId);
-
-    return this.guildServiceConfigService.findEnabled(guildId, channels);
   }
 
   /** 분류 카드에 보여줄 한 줄 요약. */
@@ -151,6 +143,10 @@ export class SetupDashboardService {
     channels: Map<string, string>,
     enabled: Set<string>,
   ): string {
+    if (!provider.linkable) {
+      return `· ${provider.label} — 준비 중`;
+    }
+
     if (!enabled.has(provider.id)) {
       return `· ${provider.label} — 미사용`;
     }
@@ -163,7 +159,7 @@ export class SetupDashboardService {
   }
 
   /**
-   * 1행: 서비스 사용 토글, 다음 행: 켜져 있는 서비스의 채널 설정 진입,
+   * 1행: 서비스 사용 토글, 다음 행: 켜져 있는 서비스의 채널·서버 설정 진입,
    * 마지막 행: 분류 선택으로 돌아가기.
    */
   private buildRows(
@@ -183,17 +179,32 @@ export class SetupDashboardService {
           enabled.has(provider.id)
             ? ButtonStyle.Success
             : ButtonStyle.Secondary,
-        ),
+        )
+        // 연동을 지원하지 않는 서비스는 켤 수 없다.
+        .setDisabled(!provider.linkable),
     );
 
-    const configButtons = providers
-      .filter((provider) => enabled.has(provider.id))
-      .map((provider) =>
+    const configButtons: ButtonBuilder[] = [];
+    for (const provider of providers) {
+      if (!enabled.has(provider.id)) continue;
+
+      configButtons.push(
         new ButtonBuilder()
           .setCustomId(buildServiceButtonId(provider.id))
-          .setLabel(`${provider.label} 채널 설정`)
+          .setLabel(`${provider.label} 채널`)
           .setStyle(ButtonStyle.Primary),
       );
+
+      // 게임서버가 있는 서비스만 관리 화면으로 들어갈 수 있다.
+      if (provider.hasGameServers) {
+        configButtons.push(
+          new ButtonBuilder()
+            .setCustomId(buildGameServerHomeId(provider.id))
+            .setLabel(`${provider.label} 서버`)
+            .setStyle(ButtonStyle.Primary),
+        );
+      }
+    }
 
     const toggleRows = this.chunk(toggleButtons);
     // 뒤로 버튼 자리를 반드시 남긴다.

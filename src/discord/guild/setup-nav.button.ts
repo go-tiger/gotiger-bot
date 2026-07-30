@@ -10,7 +10,7 @@ import {
 import {
   SETUP_CATEGORY_BUTTON_ID,
   SETUP_HOME_BUTTON_ID,
-} from '../../discord/shared/discord.constants';
+} from '../shared/discord.constants';
 
 /** /설정 의 분류 선택 ↔ 서비스 목록 사이 이동을 담당한다. */
 @Injectable()
